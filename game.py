@@ -6,6 +6,9 @@ from entities.player import Player
 from data.classes import CLASSES, ClassTemplate
 from systems.dungeon import run_dungeon_floor
 from systems.inventory import show_inventory
+from systems.shop import show_shop
+from systems.skilltree import show_skill_tree, get_available_to_unlock
+from systems.quests import show_quests
 from utils.display import (
     print_title, print_panel, print_message, print_section,
     box_top, box_bottom, box_row, box_separator,
@@ -228,14 +231,23 @@ def _camp_menu(player: Player) -> str:
     clear_screen()
     _draw_camp(player)
 
+    available_skills = get_available_to_unlock(
+        player.char_class.key, player.unlocked_skills, player.level)
+    skill_notif = clr(" [NUEVO!]", Color.YELLOW) if available_skills else ""
+    quest_count = len(player.quest_manager.active)
+    quest_notif = clr(f" [{quest_count}]", Color.CYAN) if quest_count else ""
+
     options = [
         f"Bajar al Piso {player.dungeon_floor} (sin vuelta atrás)",
         "Ver Inventario",
         "Ver Stats",
+        f"Árbol de Habilidades{skill_notif}",
+        "Tienda de Aventureros",
+        f"Misiones Secundarias{quest_notif}",
         "Guardar y salir (por ahora)",
     ]
 
-    choice = prompt_choice(options, "Que deseas hacer")
+    choice = prompt_choice(options, "¿Qué hacés?")
 
     if choice == 0:
         return "enter_dungeon"
@@ -246,6 +258,15 @@ def _camp_menu(player: Player) -> str:
         _show_stats(player)
         return _camp_menu(player)
     elif choice == 3:
+        show_skill_tree(player)
+        return _camp_menu(player)
+    elif choice == 4:
+        show_shop(player)
+        return _camp_menu(player)
+    elif choice == 5:
+        show_quests(player)
+        return _camp_menu(player)
+    elif choice == 6:
         return "quit"
 
     return "enter_dungeon"
@@ -266,6 +287,13 @@ def _draw_camp(player: Player):
     print(box_row(f"  Oro      : {clr(str(player.gold), Color.YELLOW)} gp"))
     print(box_row(f"  Enemigos : {player.kills}  |  Pisos: {player.floors_cleared}"))
     print(box_row(f"  Próximo   : Piso {player.dungeon_floor} — ¿seguro?"))
+    print(box_separator())
+    skills_av = get_available_to_unlock(
+        player.char_class.key, player.unlocked_skills, player.level)
+    skill_str = (clr(f"{len(skills_av)} para desbloquear", Color.YELLOW)
+                 if skills_av else clr("ninguna disponible", Color.GREY))
+    quest_str = clr(f"{len(player.quest_manager.active)} activas", Color.CYAN)
+    print(box_row(f"  Habilidades: {skill_str}  |  Misiones: {quest_str}"))
     print(box_bottom())
 
 
