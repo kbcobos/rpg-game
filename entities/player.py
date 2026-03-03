@@ -46,6 +46,14 @@ class Player(Character):
         self.floors_cleared = 0
         self.dungeon_floor = 1
 
+        self.unlocked_skills: list[str] = []
+
+        from systems.quests import QuestManager
+        self.quest_manager = QuestManager()
+
+        self.shop_stock: list[str] = []
+        self.shop_last_refresh: int = 0
+
         weapon = get_starting_weapon(ct.starting_weapon)
         armor  = get_starting_armor(ct.starting_armor)
         self._equip(weapon)
@@ -264,6 +272,10 @@ class Player(Character):
             "equipped_armor": self.equipped_armor.key if self.equipped_armor else None,
             "equipped_ring": self.equipped_ring.key if self.equipped_ring else None,
             "cooldowns": self.cooldowns,
+            "unlocked_skills": self.unlocked_skills,
+            "quest_data": self.quest_manager.to_dict(),
+            "shop_stock": self.shop_stock,
+            "shop_last_refresh": self.shop_last_refresh,
         }
 
     @classmethod
@@ -301,6 +313,22 @@ class Player(Character):
         player.dungeon_floor = data.get("dungeon_floor", 1)
         player.cooldowns = data.get("cooldowns", {})
         player.status_effects = []
+        player.unlocked_skills = data.get("unlocked_skills", [])
+
+        from systems.quests import QuestManager
+        player.quest_manager = QuestManager.from_dict(data.get("quest_data", {}))
+
+        player.shop_stock = data.get("shop_stock", [])
+        player.shop_last_refresh = data.get("shop_last_refresh", 0)
+
+        from systems.skilltree import ALL_SKILLS, skill_to_ability
+        for skill_key in player.unlocked_skills:
+            skill = ALL_SKILLS.get(skill_key)
+            if skill:
+                ability = skill_to_ability(skill)
+                existing_names = [a.name for a in player.char_class.abilities]
+                if ability.name not in existing_names:
+                    player.char_class.abilities.append(ability)
 
         player.inventory = []
         for key in data.get("inventory", []):
