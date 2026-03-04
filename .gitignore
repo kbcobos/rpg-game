@@ -1,0 +1,10 @@
+build/
+dist/
+*.spec.bak
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+saves/
