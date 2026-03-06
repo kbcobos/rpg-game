@@ -20,8 +20,27 @@ if getattr(sys, "frozen", False):
 else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-SAVE_DIR  = os.path.join(BASE_DIR, "saves")
-SAVE_FILE = os.path.join(SAVE_DIR, "save_game.json")
+SAVE_DIR   = os.path.join(BASE_DIR, "saves")
+SAVE_FILE  = os.path.join(SAVE_DIR, "save_game.json")
+PREFS_FILE = os.path.join(BASE_DIR, "prefs.json")
+
+
+def load_prefs() -> dict:
+    """Load user preferences (language, etc.) from disk."""
+    try:
+        import json
+        with open(PREFS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def save_prefs(prefs: dict):
+    """Save user preferences to disk."""
+    import json
+    os.makedirs(BASE_DIR, exist_ok=True)
+    with open(PREFS_FILE, "w", encoding="utf-8") as f:
+        json.dump(prefs, f, ensure_ascii=False, indent=2)
 
 SCREEN_WIDTH = 62
 
