@@ -354,7 +354,7 @@ def _show_stats(player: Player):
     for ab in player.char_class.abilities:
         cd = player.cooldowns.get(ab.name, 0)
         cd_str = clr(f" [CD:{cd}]", Color.RED) if cd > 0 else clr(" [Listo]", Color.GREEN)
-        print(box_row(f"  * {ab.name}  [{ab.mp_cost}MP]{cd_str}"))
+        print(box_row(f"  * {t(ab.name)}  [{ab.mp_cost}MP]{cd_str}"))
         print(box_row(f"    {t(ab.description)}"))
     print(box_separator())
     print(box_row(f"  Oro: {player.gold}gp  |  Bajas: {player.kills}  |  Pisos: {player.floors_cleared}"))
