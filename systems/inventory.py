@@ -1,5 +1,6 @@
 from entities.player import Player
 from data.items import Item
+from utils.lang import t
 from utils.display import (
     print_panel, box_top, box_bottom, box_row, box_separator,
     prompt_choice, press_enter, print_message, clr, Color, SCREEN_WIDTH
@@ -15,14 +16,14 @@ def show_inventory(player: Player):
         _draw_inventory(player)
 
         if not player.inventory:
-            print_message("La mochila está vacía. Literal nada.", "system")
+            print_message(t("inv_empty_msg"), "system")
             press_enter()
             return
 
         options = [f"{item.name}  [{item.item_type.upper()}]" for item in player.inventory]
-        options.append("-- Cerrar --")
+        options.append(t("inv_close"))
 
-        choice = prompt_choice(options, "¿Qué objeto?")
+        choice = prompt_choice(options, t("inv_select"))
         if choice == len(options) - 1:
             return
 
@@ -34,23 +35,23 @@ def _draw_inventory(player: Player):
     """Render the inventory panel."""
     print()
     print(box_top())
-    print(box_row(clr("INVENTARIO — lo que cargás", Color.YELLOW), align="center"))
+    print(box_row(clr(t("inventory_title"), Color.YELLOW), align="center"))
     print(box_separator())
-    print(box_row(f"Oro: {clr(str(player.gold), Color.YELLOW)} gp   "
-                  f"Objetos: {len(player.inventory)}/{20}"))
+    print(box_row(f"{t('ui_oro_label')}: {clr(str(player.gold), Color.YELLOW)} gp   "
+                  f"{t('ui_desc_label')}: {len(player.inventory)}/20"))
     print(box_separator())
 
-    w_name = player.equipped_weapon.name if player.equipped_weapon else "-- vacio --"
-    a_name = player.equipped_armor.name  if player.equipped_armor  else "-- vacio --"
-    r_name = player.equipped_ring.name   if player.equipped_ring   else "-- vacio --"
-    print(box_row(clr("EQUIPADO AHORA:", Color.CYAN)))
-    print(box_row(f"  Arma    : {w_name}"))
-    print(box_row(f"  Armadura: {a_name}"))
-    print(box_row(f"  Anillo  : {r_name}"))
+    w_name = player.equipped_weapon.name if player.equipped_weapon else t("inv_empty_slot")
+    a_name = player.equipped_armor.name  if player.equipped_armor  else t("inv_empty_slot")
+    r_name = player.equipped_ring.name   if player.equipped_ring   else t("inv_empty_slot")
+    print(box_row(clr(t("inventory_equipped"), Color.CYAN)))
+    print(box_row(f"  {t('ui_equipped_weapon'):<10}: {w_name}"))
+    print(box_row(f"  {t('ui_equipped_armor'):<10}: {a_name}"))
+    print(box_row(f"  {t('ui_equipped_ring'):<10}: {r_name}"))
     print(box_separator())
 
     if not player.inventory:
-        print(box_row(clr("  < La mochila está vacía, ni un alfajor >", Color.GREY), align="center"))
+        print(box_row(clr(f"  < {t('inventory_empty')} >", Color.GREY), align="center"))
     else:
         for i, item in enumerate(player.inventory, 1):
             rarity_color = {
@@ -79,34 +80,34 @@ def _item_action_menu(player: Player, item: Item):
     if item.defense_bonus:
         print(box_row(f"  DEF: +{item.defense_bonus}", width=40))
     if item.heal_hp:
-        print(box_row(f"  Cura: {item.heal_hp} HP", width=40))
+        print(box_row(f"  {t('inv_heal_label')}: {item.heal_hp} HP", width=40))
     if item.heal_mp:
-        print(box_row(f"  Mana: +{item.heal_mp} MP", width=40))
-    print(box_row(f"  Rareza: {item.rarity.upper()}", width=40))
+        print(box_row(f"  {t('inv_mana_label')}: +{item.heal_mp} MP", width=40))
+    print(box_row(f"  {t('inv_rarity_label')}: {item.rarity.upper()}", width=40))
     print(box_bottom(40))
 
     actions = []
     if item.item_type == "potion":
-        actions.append("Usar ahora")
+        actions.append(t("inv_action_use"))
     if item.item_type in ("weapon", "armor") or item.slot == "ring":
-        actions.append("Equipar")
-    actions.append("Tirar (y chau)")
-    actions.append("Cancelar")
+        actions.append(t("inv_action_equip"))
+    actions.append(t("inv_action_drop"))
+    actions.append(t("inv_action_cancel"))
 
-    choice = prompt_choice(actions, "¿Qué hacés con esto?")
+    choice = prompt_choice(actions, t("inv_action_prompt"))
     selected_action = actions[choice]
 
-    if selected_action == "Usar ahora":
+    if selected_action == t("inv_action_use"):
         ok, msg = player.use_potion(item)
         print_message(msg, "good" if ok else "bad")
         press_enter()
 
-    elif selected_action == "Equipar":
+    elif selected_action == t("inv_action_equip"):
         ok, msg = player.equip_item(item)
         print_message(msg, "good" if ok else "bad")
         press_enter()
 
-    elif selected_action == "Tirar (y chau)":
+    elif selected_action == t("inv_action_drop"):
         player.remove_from_inventory(item)
-        print_message(f"Tiraste el {item.name}. Decisión tomada.", "system")
+        print_message(t("inv_dropped", item=item.name), "system")
         press_enter()
