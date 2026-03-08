@@ -1,10 +1,5 @@
+__pycache__/
 build/
 dist/
-*.spec.bak
-
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
 saves/
+prefs.json
